@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -16,4 +17,11 @@ export function formatDate(dateString: string) {
     hour12: true,
   };
   return new Intl.DateTimeFormat("en-US", options).format(date);
+=======
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+>>>>>>> b6d8b87 (first commit)
 }

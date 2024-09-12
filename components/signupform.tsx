@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+=======
+'use client'
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+>>>>>>> b6d8b87 (first commit)
 
 export function SignupForm() {
   return (
@@ -40,5 +48,10 @@ export function SignupForm() {
         </CardFooter>
       </Card>
     </>
+<<<<<<< HEAD
   );
 }
+=======
+  )
+}
+>>>>>>> b6d8b87 (first commit)
