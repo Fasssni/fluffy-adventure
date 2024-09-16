@@ -21,8 +21,13 @@ export const authApi = baseApi.injectEndpoints({
         };
       },
     }),
+    checkauth: create.query({
+      query: () => ({ url: "/apiv/checkauth", credentials: "include" }),
+    }),
   }),
+
   overrideExisting: true,
 });
 
-export const { useRegisterUserMutation, useLoginMutation } = authApi;
+export const { useRegisterUserMutation, useLoginMutation, useCheckauthQuery } =
+  authApi;
