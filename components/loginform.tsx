@@ -14,11 +14,17 @@ import {
 import { ILogin } from "@/types";
 import { useLoginMutation } from "@/store/api/authApi";
 
+import { useRouter } from "next/navigation";
+
 export function LoginForm() {
   const { register, handleSubmit } = useForm<ILogin>();
   const [login, { isLoading, error }] = useLoginMutation();
+
+  const router = useRouter();
+
   async function onSubmit(data: ILogin) {
     await login(data);
+    if (!error) router.push("/dasboard");
   }
   return (
     <>

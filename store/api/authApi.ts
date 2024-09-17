@@ -1,5 +1,7 @@
 import { ILogin } from "@/types";
 import { baseApi } from "./api";
+import { setUser } from "../features/userSlice";
+import { setIsAuthorized } from "../features/auth/authSlice";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (create) => ({
@@ -23,6 +25,17 @@ export const authApi = baseApi.injectEndpoints({
     }),
     checkauth: create.query({
       query: () => ({ url: "/apiv/checkauth", credentials: "include" }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          console.log(data);
+          dispatch(setUser(data));
+          dispatch(setIsAuthorized(!!data));
+        } catch (err) {
+          console.log(err);
+          dispatch(setIsAuthorized(false));
+        }
+      },
     }),
   }),
 
