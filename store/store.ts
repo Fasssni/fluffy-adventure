@@ -6,6 +6,7 @@ import { baseApi } from "./api/api";
 
 import authReducer from "./features/auth/authSlice";
 import userReducer from "./features/userSlice";
+import { inboxApi } from "./api/inboxAuth";
 
 export const store = configureStore({
   reducer: {
@@ -14,7 +15,11 @@ export const store = configureStore({
     user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({}).concat([baseApi.middleware, authApi.middleware]),
+    getDefaultMiddleware({}).concat([
+      baseApi.middleware,
+      authApi.middleware,
+      inboxApi.middleware,
+    ]),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

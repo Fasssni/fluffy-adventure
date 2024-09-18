@@ -1,12 +1,14 @@
+import ChatList from "@/components/chat-list";
 import MessageBox from "@/components/messagebox";
-import React from "react";
 
-export default function Inbox() {
+export default function InboxPage() {
   return (
-    <div className="h-screen w-full pl-[56px] flex-col gap-4 justify-content-end items-end">
-      <div className="flex-1 h-1/2"></div>
-      <div className="w-1/2 relative ">
-        <MessageBox />
+    <div className="h-screen w-full pl-[56px] flex gap-1 items-start justify-start">
+      <div className=" w-1/3">
+        <ChatList />
+      </div>
+      <div className="w-2/3 relative h-full flex items-end">
+        <MessageBox style={{ width: "100%" }} />
       </div>
     </div>
   );
