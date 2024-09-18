@@ -18,13 +18,13 @@ import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const { register, handleSubmit } = useForm<ILogin>();
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [login, { isLoading, isError }] = useLoginMutation();
 
   const router = useRouter();
 
   async function onSubmit(data: ILogin) {
     await login(data);
-    if (!error) router.push("/dasboard");
+    if (!isError) router.push("/dashboard");
   }
   return (
     <>

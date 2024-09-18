@@ -7,7 +7,6 @@ import SideBar from "./sidebar";
 
 export function Nav() {
   const { isAuthorized } = useAppSelector((state) => state.auth);
-  console.log(isAuthorized);
   if (!isAuthorized)
     return (
       <nav className="w-screen flex justify-center items-center py-4">
