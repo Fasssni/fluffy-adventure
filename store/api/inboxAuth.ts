@@ -7,7 +7,7 @@ export const inboxApi = baseApi.injectEndpoints({
       query: (id) => {
         return {
           url: "/tg/conversations",
-          params: { user_id: id },
+          credentials: "include",
         };
       },
     }),

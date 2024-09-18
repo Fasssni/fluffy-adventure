@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useGetUserConversationsQuery } from "@/store/api/inboxAuth";
 import { useAppSelector } from "@/store/store";
@@ -9,13 +9,21 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ChatList() {
   const { id } = useAppSelector((state) => state.user);
-  const { data } = useGetUserConversationsQuery(id ?? skipToken);
+  const { data, error } = useGetUserConversationsQuery(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const selectedChatId = searchParams.get("chatId");
 
+  useEffect(() => {
+    if (!error) {
+      return;
+    }
+    if (error?.status === 403) {
+      router.push("/login");
+    }
+  }, [error]);
   return (
     <div className="flex flex-col gap-4 w-full border-secondary p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       {data?.map((chat) => {
