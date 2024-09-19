@@ -30,32 +30,6 @@ export const inboxApi = baseApi.injectEndpoints({
           },
         };
       },
-      async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          inboxApi.util.updateQueryData(
-            "getChatById",
-            id.toString(),
-            (draft) => {
-              draft.push({
-                ...patch.body,
-                id: patch.id,
-                createdAt: "2024-08-06T22:26:51.258Z",
-              });
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-
-          /**
-           * Alternatively, on failure you can invalidate the corresponding cache tags
-           * to trigger a re-fetch:
-           * dispatch(api.util.invalidateTags(['Post']))
-           */
-        }
-      },
     }),
   }),
   overrideExisting: true,

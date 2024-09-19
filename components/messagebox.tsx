@@ -9,21 +9,23 @@ import {
 import { Button } from "./ui/button";
 import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
 import { TooltipContent } from "./ui/tooltip";
-import { useSendMessageMutation } from "@/store/api/inboxApi";
+import { inboxApi, useSendMessageMutation } from "@/store/api/inboxApi";
 import { useInboxContext } from "@/context/inbox-context";
 import { useUser } from "@/hooks/useUser";
+import { useAppDispatch } from "@/store/store";
 
 export default function MessageBox({ ...props }) {
   const [message, setMessage] = useState<string>("");
   const { selectedChat } = useInboxContext();
-  const { id, name } = useUser();
+  const { name } = useUser();
+  const dispatch = useAppDispatch();
   const [sendMessage, { isLoading, isError }] = useSendMessageMutation();
-  console.log("rerendered comp");
+
   async function onSubmit(e: FormEvent) {
-    console.log("trigerred");
     e.preventDefault();
     if (!message.trim()) return;
-    await sendMessage({
+
+    const { data } = await sendMessage({
       id: selectedChat.id,
       body: {
         user_id: selectedChat.user_id,
@@ -34,6 +36,15 @@ export default function MessageBox({ ...props }) {
     });
     if (!isError) {
       setMessage("");
+      dispatch(
+        inboxApi.util.updateQueryData(
+          "getChatById",
+          selectedChat.id.toString(),
+          (draft) => {
+            draft.push(data);
+          }
+        )
+      );
     }
   }
   return (
