@@ -1,5 +1,5 @@
 import { Label } from "@radix-ui/react-label";
-import React from "react";
+import React, { FormEvent, useState } from "react";
 import { Textarea } from "./ui/textarea";
 import {
   Tooltip,
@@ -9,12 +9,38 @@ import {
 import { Button } from "./ui/button";
 import { CornerDownLeft, Mic, Paperclip } from "lucide-react";
 import { TooltipContent } from "./ui/tooltip";
+import { useSendMessageMutation } from "@/store/api/inboxApi";
+import { useInboxContext } from "@/context/inbox-context";
+import { useUser } from "@/hooks/useUser";
 
 export default function MessageBox({ ...props }) {
+  const [message, setMessage] = useState<string>("");
+  const { selectedChat } = useInboxContext();
+  const { id, name } = useUser();
+  const [sendMessage, { isLoading, isError }] = useSendMessageMutation();
+  console.log("rerendered comp");
+  async function onSubmit(e: FormEvent) {
+    console.log("trigerred");
+    e.preventDefault();
+    if (!message.trim()) return;
+    await sendMessage({
+      id: selectedChat.id,
+      body: {
+        user_id: selectedChat.user_id,
+        name,
+        to_id: selectedChat.to_id,
+        text: message,
+      },
+    });
+    if (!isError) {
+      setMessage("");
+    }
+  }
   return (
     <form
       className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
       x-chunk="dashboard-03-chunk-1"
+      onSubmit={onSubmit}
       {...props}
     >
       <Label htmlFor="message" className="sr-only">
@@ -24,6 +50,8 @@ export default function MessageBox({ ...props }) {
         id="message"
         placeholder="Type your message here..."
         className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+        onChange={(e) => setMessage(e.target.value)}
+        value={message}
       />
       <div className="flex items-center p-3 pt-0">
         <TooltipProvider>

@@ -13,7 +13,7 @@ export function Nav() {
     skip: isAuthorized,
   });
   if (isLoading) {
-    return createPortal(<Spinner />, document.body);
+    return <Spinner />;
   }
   if (!isAuthorized)
     return (

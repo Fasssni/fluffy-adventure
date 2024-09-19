@@ -10,22 +10,23 @@ import {
 } from "@/components/ui/chat/chat-bubble";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
 import { useGetChatByIdQuery } from "@/store/api/inboxApi";
-import { useAppSelector } from "@/store/store";
 import { useUser } from "@/hooks/useUser";
+import { useErrorRedirect } from "@/hooks/useErrorRedirect";
+import { formatDate } from "@/lib/utils";
 
 export default function ChatContainer({
   chat_id,
 }: {
   chat_id: string | string[];
 }) {
-  const { data } = useGetChatByIdQuery(chat_id);
+  const { data, error } = useGetChatByIdQuery(chat_id);
   const { id } = useUser();
-  console.log(id, "id");
-  const ta = useAppSelector((state) => state.user);
-  console.log(ta, "ta");
+
   function checkAddresser(user_id: number | bigint) {
     return user_id === id ? "sent" : "received";
   }
+
+  useErrorRedirect(error);
 
   return (
     <div className="w-2/3 relative h-full flex flex-col items-start justify-end py">
@@ -37,9 +38,14 @@ export default function ChatContainer({
               key={message.id}
             >
               <ChatBubbleAvatar fallback="C" />
-              <ChatBubbleMessage variant="sent">
-                {message.text}
-              </ChatBubbleMessage>
+              <div className="flex flex-col">
+                <ChatBubbleMessage variant={checkAddresser(message.user_id)}>
+                  {message.text}
+                </ChatBubbleMessage>
+                <span className="text-xs text-gray-500 mt-1 self-end">
+                  {formatDate(message.createdAt)}{" "}
+                </span>
+              </div>
             </ChatBubble>
           );
         })}
@@ -48,14 +54,3 @@ export default function ChatContainer({
     </div>
   );
 }
-
-// <ChatBubble variant="received">
-// <ChatBubbleAvatar fallback="AI" />
-// <ChatBubbleMessage variant="received">
-//   Hi, I am doing well, thank you for asking. How can I help you today?
-// </ChatBubbleMessage>
-// </ChatBubble>
-// <ChatBubble variant="received">
-// <ChatBubbleAvatar fallback="AI" />
-// <ChatBubbleMessage isLoading />
-// </ChatBubble>
