@@ -6,7 +6,7 @@ import { baseApi } from "./api/api";
 
 import authReducer from "./features/auth/authSlice";
 import userReducer from "./features/userSlice";
-import { inboxApi } from "./api/inboxAuth";
+import { inboxApi } from "./api/inboxApi";
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +15,7 @@ export const store = configureStore({
     user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({}).concat([
+    getDefaultMiddleware({ serializableCheck: false }).concat([
       baseApi.middleware,
       authApi.middleware,
       inboxApi.middleware,

@@ -1,11 +1,12 @@
-import { ILogin } from "@/types";
+import { ILogin, ILoginResponse } from "@/types";
 import { baseApi } from "./api";
 import { setUser } from "../features/userSlice";
 import { setIsAuthorized } from "../features/auth/authSlice";
+import { getUser } from "../helpers";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (create) => ({
-    registerUser: create.mutation<ILogin, unknown>({
+    registerUser: create.mutation<ILoginResponse, ILogin>({
       query: (data) => ({
         url: "/apiv/register",
         method: "POST",
@@ -13,7 +14,7 @@ export const authApi = baseApi.injectEndpoints({
         withCredentials: "include",
       }),
     }),
-    login: create.mutation<void, ILogin>({
+    login: create.mutation<ILoginResponse, ILogin>({
       query: (data) => {
         return {
           url: "/apiv/login",
@@ -22,20 +23,11 @@ export const authApi = baseApi.injectEndpoints({
           credentials: "include",
         };
       },
+      onQueryStarted: getUser,
     }),
-    checkauth: create.query({
+    checkauth: create.query<any, void>({
       query: () => ({ url: "/apiv/checkauth", credentials: "include" }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          console.log(data);
-          dispatch(setUser(data));
-          dispatch(setIsAuthorized(!!data));
-        } catch (err) {
-          console.log(err);
-          dispatch(setIsAuthorized(false));
-        }
-      },
+      onQueryStarted: getUser,
     }),
   }),
 

@@ -15,6 +15,9 @@ import { ILogin } from "@/types";
 import { useLoginMutation } from "@/store/api/authApi";
 
 import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/store";
+import { setUser } from "@/store/features/userSlice";
+import { setIsAuthorized } from "@/store/features/auth/authSlice";
 
 export function LoginForm() {
   const { register, handleSubmit } = useForm<ILogin>();
@@ -23,8 +26,10 @@ export function LoginForm() {
   const router = useRouter();
 
   async function onSubmit(data: ILogin) {
-    await login(data);
-    if (!isError) router.push("/dashboard");
+    const res = await login(data);
+    if (!isError && res) {
+      router.push("/dashboard");
+    }
   }
   return (
     <>

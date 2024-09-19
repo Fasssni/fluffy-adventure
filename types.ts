@@ -33,3 +33,28 @@ export interface ILastMessage {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IMessage {
+  id: number;
+  user_id: number;
+  text: string;
+  name: string;
+  conversation_id: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ILoginResponse {
+  token: string;
+  user: IUserLoginResponse;
+}
+
+export interface IUserLoginResponse {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+}
