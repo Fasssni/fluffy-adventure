@@ -1,4 +1,4 @@
-import { IConversation, IMessage } from "@/types";
+import { ChannelType, IConversation, IMessage, TemplatesType } from "@/types";
 import { baseApi } from "./api";
 import { SendMessageBodyType } from "./types";
 
@@ -8,22 +8,19 @@ export const inboxApi = baseApi.injectEndpoints({
       query: () => {
         return {
           url: "/tg/conversations",
-          credentials: "include",
         };
       },
     }),
     getChatById: create.query<IMessage[], string | string[]>({
       query: (id) => {
-        return { url: `/tg/getchat/${id}`, credentials: "include" };
+        return { url: `/tg/getchat/${id}` };
       },
     }),
     sendMessage: create.mutation<void, SendMessageBodyType>({
       query: ({ id, body }) => {
-        console.log("triggered1");
         return {
           url: "/tg/sendmessage",
           method: "POST",
-          credentials: "include",
           body,
           params: {
             id,
@@ -31,7 +28,23 @@ export const inboxApi = baseApi.injectEndpoints({
         };
       },
     }),
+    getChannels: create.query<ChannelType[], number | null>({
+      query: (user_id) => {
+        return {
+          url: "/apiv/getchannels",
+          params: { id: user_id },
+        };
+      },
+    }),
+    getTemplates: create.query<TemplatesType[], number>({
+      query: (channelId: number) => {
+        return {
+          url: `/tg/gettemplates/${channelId}`,
+        };
+      },
+    }),
   }),
+
   overrideExisting: true,
 });
 
@@ -39,13 +52,6 @@ export const {
   useGetUserConversationsQuery,
   useGetChatByIdQuery,
   useSendMessageMutation,
+  useGetChannelsQuery,
+  useGetTemplatesQuery,
 } = inboxApi;
-
-// (draft) => {
-//   draft.push({
-//     id: new Date().getTime(), // Temporarily use timestamp as ID
-//     text: body.text, // Assuming `body.text` contains the message text
-//     user_id: body.user_id, // Assuming the message sender is in `body.user_id`
-//     createdAt: new Date().toISOString(),
-//     conversation_id: id, // Add the conversation ID
-//   });

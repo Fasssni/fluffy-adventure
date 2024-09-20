@@ -58,3 +58,27 @@ export interface IUserLoginResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export type ChannelType = {
+  id: number;
+  name: string;
+  bot_id: number;
+};
+
+export type TemplatesType = {
+  id: number;
+  bot_id: number;
+  name: string;
+  text: string;
+  triggersTo: string;
+  createdAt: string;
+  updatedAt: string;
+  bot_name: string;
+};
+
+export type TemplateBodyType = {
+  bot_id: number;
+  name: string;
+  triggersTo: string;
+  text: string;
+};

@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useUser } from "@/hooks/useUser"; // assuming this hook is implemented
 import axios from "axios";
+import {
+  useGetChannelsQuery,
+  useGetTemplatesQuery,
+} from "@/store/api/inboxApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { Spinner } from "@/components/ui/spinner";
 
 type ChannelType = {
   id: number;
@@ -30,9 +36,7 @@ type TemplateBodyType = {
 
 const Dashboard = () => {
   const user = useUser(); // assuming useUser provides user object
-  const [channels, setChannels] = useState<ChannelType[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
-  const [templates, setTemplates] = useState<TemplatesType[]>([]);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<TemplateBodyType>({
@@ -42,29 +46,8 @@ const Dashboard = () => {
     text: "",
   });
 
-  useEffect(() => {
-    if (user?.id) {
-      // Fetch channels
-      axios
-        .get(
-          `${process.env.NEXT_PUBLIC_BASE_BACKEND}/apiv/getchannels?id=${user.id}`
-        )
-        .then((res) => setChannels(res.data))
-        .catch((err) => console.error("Failed to fetch channels", err));
-    }
-  }, [user]);
-
-  const handleChannelSelect = async (channelId: number) => {
-    setSelectedChannel(channelId);
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_BACKEND}/tg/gettemplates/${channelId}`
-      );
-      setTemplates(response.data);
-    } catch (error) {
-      console.error("Error fetching templates", error);
-    }
-  };
+  const channels = useGetChannelsQuery(user.id, { skip: !!!user.id });
+  const templates = useGetTemplatesQuery(selectedChannel ?? skipToken);
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const bot_id = parseInt(e.target.value);
@@ -102,20 +85,28 @@ const Dashboard = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-semibold text-gray-800">Automations</h1>
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {channels.map((channel) => (
-            <div
-              key={channel.id}
-              onClick={() => handleChannelSelect(channel.id)}
-              className={`p-4 border rounded-lg shadow-lg cursor-pointer ${
-                selectedChannel === channel.id ? "bg-indigo-200" : "bg-white"
-              }`}
-            >
-              <h2 className="text-xl font-bold text-gray-800">
-                {channel.name}
-              </h2>
-              <p className="text-gray-600">Bot ID: {channel.id}</p>
-            </div>
-          ))}
+          {channels.isLoading ? (
+            <Spinner />
+          ) : (
+            <>
+              {channels.data?.map((channel) => (
+                <div
+                  key={channel.id}
+                  onClick={() => setSelectedChannel(channel.id)}
+                  className={`p-4 border rounded-lg shadow-lg cursor-pointer ${
+                    selectedChannel === channel.id
+                      ? "bg-indigo-200"
+                      : "bg-white"
+                  }`}
+                >
+                  <h2 className="text-xl font-bold text-gray-800">
+                    {channel.name}
+                  </h2>
+                  <p className="text-gray-600">Bot ID: {channel.id}</p>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         {/* Display templates if a channel is selected */}
@@ -123,16 +114,22 @@ const Dashboard = () => {
           <div className="mt-8">
             <h2 className="text-2xl font-bold text-gray-800">Templates</h2>
             <div className="grid grid-cols-1 gap-4 mt-4">
-              {templates.map((template) => (
-                <div
-                  key={template.id}
-                  className="p-4 bg-white border rounded-lg shadow-sm"
-                >
-                  <h3 className="text-xl font-bold">{template.name}</h3>
-                  <p>Trigger: {template.triggersTo}</p>
-                  <p>Reply: {template.text}</p>
-                </div>
-              ))}
+              {templates.isLoading ? (
+                <Spinner />
+              ) : (
+                <>
+                  {templates.data?.map((template) => (
+                    <div
+                      key={template.id}
+                      className="p-4 bg-white border rounded-lg shadow-sm"
+                    >
+                      <h3 className="text-xl font-bold">{template.name}</h3>
+                      <p>Trigger: {template.triggersTo}</p>
+                      <p>Reply: {template.text}</p>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -156,7 +153,6 @@ const Dashboard = () => {
               onClick={(e) => e.stopPropagation()}
               onSubmit={onSubmitHandler}
             >
-              {/* Close button */}
               <button
                 type="button"
                 className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 focus:outline-none"
@@ -178,7 +174,6 @@ const Dashboard = () => {
                 </svg>
               </button>
 
-              {/* Channel Select */}
               <div className="flex flex-col gap-2 w-full">
                 <label className="text-sm font-semibold text-gray-700">
                   Select a channel
@@ -188,7 +183,7 @@ const Dashboard = () => {
                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300"
                 >
                   <option value="0">Choose a channel</option>
-                  {channels.map((channel) => (
+                  {channels.data?.map((channel) => (
                     <option key={channel.id} value={channel.id}>
                       {channel.name}
                     </option>
@@ -196,7 +191,6 @@ const Dashboard = () => {
                 </select>
               </div>
 
-              {/* Message Trigger Input */}
               <div className="flex flex-col gap-2 w-full">
                 <label className="text-sm font-semibold text-gray-700">
                   Message equals to
@@ -208,7 +202,6 @@ const Dashboard = () => {
                 />
               </div>
 
-              {/* Reply with Textarea */}
               <div className="flex flex-col gap-2 w-full">
                 <label className="text-sm font-semibold text-gray-700">
                   Reply with
@@ -220,7 +213,6 @@ const Dashboard = () => {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 className="w-full bg-indigo-500 text-white py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-transform duration-300 hover:scale-105"
                 type="submit"
