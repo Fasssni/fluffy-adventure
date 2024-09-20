@@ -1,351 +1,239 @@
 "use client";
 
-import {
-  Bird,
-  Book,
-  Bot,
-  Code2,
-  CornerDownLeft,
-  LifeBuoy,
-  Mic,
-  Paperclip,
-  Rabbit,
-  Settings,
-  Settings2,
-  Share,
-  SquareTerminal,
-  SquareUser,
-  Triangle,
-  Turtle,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useUser } from "@/hooks/useUser"; // assuming this hook is implemented
+import axios from "axios";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
-import SideBar from "@/components/sidebar";
-import { useCheckauthQuery } from "@/store/api/authApi";
+type ChannelType = {
+  id: number;
+  name: string;
+  bot_id: number;
+};
 
-export const description =
-  "An AI playground with a sidebar navigation and a main content area. The playground has a header with a settings drawer and a share button. The sidebar has navigation links and a user menu. The main content area shows a form to configure the model and messages.";
+type TemplatesType = {
+  id: number;
+  bot_id: number;
+  name: string;
+  text: string;
+  triggersTo: string;
+  createdAt: string;
+  updatedAt: string;
+  bot_name: string;
+};
 
-export default function Dashboard() {
+type TemplateBodyType = {
+  bot_id: number;
+  name: string;
+  triggersTo: string;
+  text: string;
+};
+
+const Dashboard = () => {
+  const user = useUser(); // assuming useUser provides user object
+  const [channels, setChannels] = useState<ChannelType[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
+  const [templates, setTemplates] = useState<TemplatesType[]>([]);
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<TemplateBodyType>({
+    bot_id: 0,
+    name: "",
+    triggersTo: "",
+    text: "",
+  });
+
+  useEffect(() => {
+    if (user?.id) {
+      // Fetch channels
+      axios
+        .get(
+          `${process.env.NEXT_PUBLIC_BASE_BACKEND}/apiv/getchannels?id=${user.id}`
+        )
+        .then((res) => setChannels(res.data))
+        .catch((err) => console.error("Failed to fetch channels", err));
+    }
+  }, [user]);
+
+  const handleChannelSelect = async (channelId: number) => {
+    setSelectedChannel(channelId);
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_BACKEND}/tg/gettemplates/${channelId}`
+      );
+      setTemplates(response.data);
+    } catch (error) {
+      console.error("Error fetching templates", error);
+    }
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const bot_id = parseInt(e.target.value);
+    setFormData({ ...formData, bot_id });
+  };
+
+  const onInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const builderOnClose = () => setIsBuilderOpen(false);
+
+  const onSubmitHandler = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_BACKEND}/tg/addtemplate`,
+        { ...formData, name: new Date().getTime() }
+      );
+      alert("Template added successfully!");
+      setIsBuilderOpen(false);
+    } catch (error) {
+      console.error("Error adding template", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="grid h-screen w-full pl-[56px]">
-      <div className="flex flex-col">
-        <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-          <h1 className="text-xl font-semibold">Playground</h1>
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Settings className="size-4" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="max-h-[80vh]">
-              <DrawerHeader>
-                <DrawerTitle>Configuration</DrawerTitle>
-                <DrawerDescription>
-                  Configure the settings for the model and messages.
-                </DrawerDescription>
-              </DrawerHeader>
-              <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
-                <fieldset className="grid gap-6 rounded-lg border p-4">
-                  <legend className="-ml-1 px-1 text-sm font-medium">
-                    Settings
-                  </legend>
-                  <div className="grid gap-3">
-                    <Label htmlFor="model">Model</Label>
-                    <Select>
-                      <SelectTrigger
-                        id="model"
-                        className="items-start [&_[data-description]]:hidden"
-                      >
-                        <SelectValue placeholder="Select a model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="genesis">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Rabbit className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Genesis
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                Our fastest model for general use cases.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="explorer">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Bird className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Explorer
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                Performance and speed for efficiency.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="quantum">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Turtle className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Quantum
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                The most powerful model for complex
-                                computations.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="temperature">Temperature</Label>
-                    <Input id="temperature" type="number" placeholder="0.4" />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-p">Top P</Label>
-                    <Input id="top-p" type="number" placeholder="0.7" />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-k">Top K</Label>
-                    <Input id="top-k" type="number" placeholder="0.0" />
-                  </div>
-                </fieldset>
-                <fieldset className="grid gap-6 rounded-lg border p-4">
-                  <legend className="-ml-1 px-1 text-sm font-medium">
-                    Messages
-                  </legend>
-                  <div className="grid gap-3">
-                    <Label htmlFor="role">Role</Label>
-                    <Select defaultValue="system">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="system">System</SelectItem>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="assistant">Assistant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="content">Content</Label>
-                    <Textarea id="content" placeholder="You are a..." />
-                  </div>
-                </fieldset>
-              </form>
-            </DrawerContent>
-          </Drawer>
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-auto gap-1.5 text-sm"
-          >
-            <Share className="size-3.5" />
-            Share
-          </Button>
-        </header>
-        <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
-          <div
-            className="relative hidden flex-col items-start gap-8 md:flex"
-            x-chunk="dashboard-03-chunk-0"
-          >
-            <form className="grid w-full items-start gap-6">
-              <fieldset className="grid gap-6 rounded-lg border p-4">
-                <legend className="-ml-1 px-1 text-sm font-medium">
-                  Settings
-                </legend>
-                <div className="grid gap-3">
-                  <Label htmlFor="model">Model</Label>
-                  <Select>
-                    <SelectTrigger
-                      id="model"
-                      className="items-start [&_[data-description]]:hidden"
-                    >
-                      <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="genesis">
-                        <div className="flex items-start gap-3 text-muted-foreground">
-                          <Rabbit className="size-5" />
-                          <div className="grid gap-0.5">
-                            <p>
-                              Neural{" "}
-                              <span className="font-medium text-foreground">
-                                Genesis
-                              </span>
-                            </p>
-                            <p className="text-xs" data-description>
-                              Our fastest model for general use cases.
-                            </p>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="explorer">
-                        <div className="flex items-start gap-3 text-muted-foreground">
-                          <Bird className="size-5" />
-                          <div className="grid gap-0.5">
-                            <p>
-                              Neural{" "}
-                              <span className="font-medium text-foreground">
-                                Explorer
-                              </span>
-                            </p>
-                            <p className="text-xs" data-description>
-                              Performance and speed for efficiency.
-                            </p>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="quantum">
-                        <div className="flex items-start gap-3 text-muted-foreground">
-                          <Turtle className="size-5" />
-                          <div className="grid gap-0.5">
-                            <p>
-                              Neural{" "}
-                              <span className="font-medium text-foreground">
-                                Quantum
-                              </span>
-                            </p>
-                            <p className="text-xs" data-description>
-                              The most powerful model for complex computations.
-                            </p>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="temperature">Temperature</Label>
-                  <Input id="temperature" type="number" placeholder="0.4" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-p">Top P</Label>
-                    <Input id="top-p" type="number" placeholder="0.7" />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-k">Top K</Label>
-                    <Input id="top-k" type="number" placeholder="0.0" />
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset className="grid gap-6 rounded-lg border p-4">
-                <legend className="-ml-1 px-1 text-sm font-medium">
-                  Messages
-                </legend>
-                <div className="grid gap-3">
-                  <Label htmlFor="role">Role</Label>
-                  <Select defaultValue="system">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="system">System</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="assistant">Assistant</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="content">Content</Label>
-                  <Textarea
-                    id="content"
-                    placeholder="You are a..."
-                    className="min-h-[9.5rem]"
-                  />
-                </div>
-              </fieldset>
-            </form>
-          </div>
-          <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2">
-            <Badge variant="outline" className="absolute right-3 top-3">
-              Output
-            </Badge>
-            <div className="flex-1" />
-            <form
-              className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
-              x-chunk="dashboard-03-chunk-1"
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-semibold text-gray-800">Automations</h1>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {channels.map((channel) => (
+            <div
+              key={channel.id}
+              onClick={() => handleChannelSelect(channel.id)}
+              className={`p-4 border rounded-lg shadow-lg cursor-pointer ${
+                selectedChannel === channel.id ? "bg-indigo-200" : "bg-white"
+              }`}
             >
-              <Label htmlFor="message" className="sr-only">
-                Message
-              </Label>
-              <Textarea
-                id="message"
-                placeholder="Type your message here..."
-                className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
-              />
-              <div className="flex items-center p-3 pt-0">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Paperclip className="size-4" />
-                        <span className="sr-only">Attach file</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">Attach File</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Mic className="size-4" />
-                        <span className="sr-only">Use Microphone</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">Use Microphone</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <Button type="submit" size="sm" className="ml-auto gap-1.5">
-                  Send Message
-                  <CornerDownLeft className="size-3.5" />
-                </Button>
+              <h2 className="text-xl font-bold text-gray-800">
+                {channel.name}
+              </h2>
+              <p className="text-gray-600">Bot ID: {channel.id}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Display templates if a channel is selected */}
+        {selectedChannel && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-gray-800">Templates</h2>
+            <div className="grid grid-cols-1 gap-4 mt-4">
+              {templates.map((template) => (
+                <div
+                  key={template.id}
+                  className="p-4 bg-white border rounded-lg shadow-sm"
+                >
+                  <h3 className="text-xl font-bold">{template.name}</h3>
+                  <p>Trigger: {template.triggersTo}</p>
+                  <p>Reply: {template.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add Automation Button */}
+        <button
+          className="mt-8 px-6 py-3 bg-indigo-500 text-white rounded-md hover:bg-indigo-600"
+          onClick={() => setIsBuilderOpen(true)}
+        >
+          Add Automation
+        </button>
+
+        {/* Modal for adding new template */}
+        {isBuilderOpen && (
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300"
+            onClick={builderOnClose}
+          >
+            <form
+              className="relative w-[90vw] md:w-[60vw] lg:w-[40vw] bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-6 transform transition-all duration-500 ease-in-out scale-100 hover:scale-[1.02]"
+              onClick={(e) => e.stopPropagation()}
+              onSubmit={onSubmitHandler}
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 focus:outline-none"
+                onClick={builderOnClose}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Channel Select */}
+              <div className="flex flex-col gap-2 w-full">
+                <label className="text-sm font-semibold text-gray-700">
+                  Select a channel
+                </label>
+                <select
+                  onChange={handleSelectChange}
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300"
+                >
+                  <option value="0">Choose a channel</option>
+                  {channels.map((channel) => (
+                    <option key={channel.id} value={channel.id}>
+                      {channel.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* Message Trigger Input */}
+              <div className="flex flex-col gap-2 w-full">
+                <label className="text-sm font-semibold text-gray-700">
+                  Message equals to
+                </label>
+                <input
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300"
+                  name="triggersTo"
+                  onChange={onInputChange}
+                />
+              </div>
+
+              {/* Reply with Textarea */}
+              <div className="flex flex-col gap-2 w-full">
+                <label className="text-sm font-semibold text-gray-700">
+                  Reply with
+                </label>
+                <textarea
+                  className="w-full h-32 border border-gray-300 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300"
+                  name="text"
+                  onChange={onInputChange}
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                className="w-full bg-indigo-500 text-white py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-transform duration-300 hover:scale-105"
+                type="submit"
+              >
+                Submit
+              </button>
+              {isLoading && <p>Loading...</p>}
             </form>
           </div>
-        </main>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
