@@ -4,7 +4,6 @@ console.log(baseUrl);
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl, credentials: "include" }),
+  tagTypes: ["Templates"],
   endpoints: () => ({}),
 });
-
-const {} = baseApi;

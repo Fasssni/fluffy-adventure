@@ -1,5 +1,4 @@
 import { IUser, IUserLoginResponse } from "@/types";
-import { LargeNumberLike } from "crypto";
 
 export class userDto {
   name: string;

@@ -1,4 +1,10 @@
-import { ChannelType, IConversation, IMessage, TemplatesType } from "@/types";
+import {
+  ChannelType,
+  IConversation,
+  IMessage,
+  TemplateBodyType,
+  TemplatesType,
+} from "@/types";
 import { baseApi } from "./api";
 import { SendMessageBodyType } from "./types";
 
@@ -42,10 +48,25 @@ export const inboxApi = baseApi.injectEndpoints({
           url: `/tg/gettemplates/${channelId}`,
         };
       },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "Templates" as const, id })),
+              { type: "Templates", id: "LIST" },
+            ]
+          : ["Templates"],
+    }),
+    addTemplate: create.mutation<TemplatesType, TemplateBodyType>({
+      query: (templateData) => {
+        return {
+          method: "POST",
+          url: "/tg/addtemplate",
+          body: templateData,
+        };
+      },
+      invalidatesTags: [{ type: "Templates", id: "LIST" }],
     }),
   }),
-
-  overrideExisting: true,
 });
 
 export const {
@@ -54,4 +75,5 @@ export const {
   useSendMessageMutation,
   useGetChannelsQuery,
   useGetTemplatesQuery,
+  useAddTemplateMutation,
 } = inboxApi;

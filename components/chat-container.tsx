@@ -39,7 +39,7 @@ export default function ChatContainer({
             >
               <ChatBubbleAvatar fallback="C" />
               <div className="flex flex-col">
-                <ChatBubbleMessage variant={checkAddresser(message.user_id)}>
+                <ChatBubbleMessage variant={checkAddresser(message?.user_id)}>
                   {message.text}
                 </ChatBubbleMessage>
                 <span className="text-xs text-gray-500 mt-1 self-end">
