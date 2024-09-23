@@ -3,8 +3,8 @@ import { IConversation } from "@/types";
 import { createContext, useCallback, useContext, useState } from "react";
 
 type StoreContexType = {
-  selectedChat: IConversation | null;
-  selectChat: (selected: IConversation) => void;
+  selectedChat: IConversation | undefined;
+  selectChat: (selected: IConversation | undefined) => void;
 };
 
 const inboxContext = createContext({} as StoreContexType);
@@ -16,9 +16,11 @@ export const InboxContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [selectedChat, setSelectedChat] = useState<IConversation | null>(null);
+  const [selectedChat, setSelectedChat] = useState<IConversation | undefined>(
+    undefined
+  );
 
-  const selectChat = useCallback((selected: IConversation) => {
+  const selectChat = useCallback((selected: IConversation | undefined) => {
     setSelectedChat(selected);
   }, []);
   return (

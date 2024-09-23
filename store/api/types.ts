@@ -1,9 +1,11 @@
+import { IMessage } from "@/types";
+
 export type SendMessageBodyType = {
-  id: number;
-  body: {
-    user_id: number | null;
-    text: string;
-    name: string;
-    to_id: string | null;
-  };
+  id?: number;
+  body: Partial<
+    { to_id: string } & Omit<
+      IMessage,
+      "conversation_id" | "createdAt" | "updatedAt"
+    >
+  >;
 };

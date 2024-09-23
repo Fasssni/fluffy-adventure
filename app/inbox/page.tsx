@@ -1,7 +1,6 @@
 import ChatContainer from "@/components/chat-container";
 import ChatList from "@/components/chat-list";
 import { InboxContextProvider } from "@/context/inbox-context";
-import { useRouter } from "next/router";
 
 export default function InboxPage({
   params,

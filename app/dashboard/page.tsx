@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useUser } from "@/hooks/useUser"; // assuming this hook is implemented
-import axios from "axios";
+import { useUser } from "@/hooks/useUser";
 import {
   useAddTemplateMutation,
   useGetChannelsQuery,
@@ -37,7 +36,7 @@ type TemplateBodyType = {
 };
 
 const Dashboard = () => {
-  const user = useUser(); // assuming useUser provides user object
+  const user = useUser();
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
@@ -45,10 +44,6 @@ const Dashboard = () => {
   const templates = useGetTemplatesQuery(selectedChannel ?? skipToken);
 
   const builderOnClose = () => setIsBuilderOpen(false);
-
-  useEffect(() => {
-    console.log(selectedChannel, "changed");
-  }, [selectedChannel]);
 
   return (
     <div className="min-h-screen bg-gray-100 pl-[56px]">

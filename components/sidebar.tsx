@@ -36,21 +36,15 @@ export default function SideBar() {
     },
     {
       id: 2,
-      title: "Models",
+      title: "Dashboard",
       icon: () => <Bot className="size-5" />,
       to: "/dashboard",
     },
     {
       id: 3,
-      title: "API",
+      title: "Channels",
       icon: () => <Code2 className="size-5" />,
-      to: "/dashboard",
-    },
-    {
-      id: 4,
-      title: "Documentation",
-      icon: () => <Book className="size-5" />,
-      to: "/dashboard",
+      to: "/channels",
     },
   ];
   return (

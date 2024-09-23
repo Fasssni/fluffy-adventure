@@ -25,26 +25,17 @@ export default function MessageBox({ ...props }) {
     e.preventDefault();
     if (!message.trim()) return;
 
-    const { data } = await sendMessage({
-      id: selectedChat.id,
+    await sendMessage({
+      id: selectedChat?.id,
       body: {
-        user_id: selectedChat.user_id,
+        user_id: selectedChat?.user_id,
         name,
-        to_id: selectedChat.to_id,
+        to_id: selectedChat?.to_id,
         text: message,
       },
     });
     if (!isError) {
       setMessage("");
-      dispatch(
-        inboxApi.util.updateQueryData(
-          "getChatById",
-          selectedChat.id.toString(),
-          (draft) => {
-            draft.push(data);
-          }
-        )
-      );
     }
   }
   return (
