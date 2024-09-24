@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Nav } from "@/components/nav";
-<<<<<<< HEAD
 import { Providers } from "@/store/provider";
-=======
->>>>>>> b6d8b87 (first commit)
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,15 +32,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-<<<<<<< HEAD
         <Providers>
           <Nav />
           {children}
         </Providers>
-=======
-            <Nav/>
-        {children}
->>>>>>> b6d8b87 (first commit)
       </body>
     </html>
   );
