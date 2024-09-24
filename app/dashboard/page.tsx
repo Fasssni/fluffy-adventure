@@ -40,8 +40,8 @@ const Dashboard = () => {
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
-  const channels = useGetChannelsQuery(user.id, { skip: !!!user.id });
   const templates = useGetTemplatesQuery(selectedChannel ?? skipToken);
+  const channels = useGetChannelsQuery(user.id, { skip: !!!user.id });
 
   const builderOnClose = () => setIsBuilderOpen(false);
 
