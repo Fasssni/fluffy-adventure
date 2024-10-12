@@ -4,6 +4,7 @@ import { useCreateTgBotMutation } from "@/store/api/inboxApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
+import { Spinner } from "./ui/spinner";
 
 type BotProps = {
   name: string;
@@ -26,7 +27,7 @@ export const TelegramAdder = () => {
   const tokenRef = useRef<HTMLInputElement>(null);
 
   const { id } = useUser();
-  const [createBot] = useCreateTgBotMutation();
+  const [createBot, { isLoading }] = useCreateTgBotMutation();
 
   const onSubmitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,7 +49,13 @@ export const TelegramAdder = () => {
   const handleModalClose = () => {
     setModalOk(false);
   };
-
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
+        <Spinner />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
       {modalOk && (
